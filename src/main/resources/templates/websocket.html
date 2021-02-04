@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>websocket通讯</title>
+</head>
+<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+<script>
+    var websocket = null;
+    if ('WebSocket' in window) {
+        const time = new Date().getTime()
+        websocket = new WebSocket("ws://10.10.10.149:9999/websocket/" + time);
+    }
+
+    websocket.onopen = function () {
+        console.log("连接成功");
+        add("连接成功")
+    }
+
+    websocket.onclose = function () {
+        console.log("退出连接");
+    }
+
+    websocket.onmessage = function (event) {
+        console.log("收到消息" + event.data);
+        add(event.data)
+    }
+
+    websocket.onerror = function () {
+        console.log("连接出错");
+    }
+
+    window.onbeforeunload = function () {
+        websocket.close(num);
+    }
+
+    function add(message){
+        var tempTr = $("tr:first").clone(true);
+        $("tr:last").after(tempTr);
+        $("tr:last > td > #name").val(message);//新添加行name为空
+        $("tr:last > td > #address").val("");//新添加行address为空
+    }
+
+    function calAge(e){
+        if (e.keyCode == 13) {
+            //回车后要干的业务代码
+            send()
+        }
+    }
+
+    function send(){
+        const message = $("#msgbox").val();
+        if(!message || !message.trim()){
+            alert("请输入消息")
+            return
+        }
+        websocket.send(message);
+        // $.ajax({
+        //     url:'/groupsending',
+        //     dataType:'json',
+        //     type:'get',
+        //     async: true,
+        //     data: "message="+message
+        // });
+        $("#msgbox").val("")
+    }
+</script>
+<body>
+<table border="1">
+    <tr>
+        <td><input type="text" id="name" name="name" value="居里栈栈聊天室" disabled/></td>
+    </tr>
+</table>
+<textarea id="msgbox" placeholder="输入你要发送的内容,支持回车发送~" onkeydown="calAge(event)"></textarea>
+<button onclick="send()">发送</button>
+
+</body>
+
+</html>
